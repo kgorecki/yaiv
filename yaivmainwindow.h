@@ -63,6 +63,10 @@ private:
     QStringList::iterator dirIterator;
     QString dirBase;
 
+    //menu:
+    QMenu *fileMenu;
+    QMenu *viewMenu;
+
     QAction *aFileOpen;
     QAction *aFileSave;
     QAction *aFileSaveAs;

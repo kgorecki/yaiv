@@ -132,7 +132,7 @@ void YaivMainWindow::resizeEvent(QResizeEvent *event)
 // *** private
 void YaivMainWindow::prepareActions()
 {
-    QMenu *fileMenu = menuBar()->addMenu(tr("File"));
+    fileMenu = menuBar()->addMenu(tr("File"));
     aFileOpen = fileMenu->addAction(tr("&Open"), this, &YaivMainWindow::sFileOpen);
     aFileOpen->setShortcut(QKeySequence::Open);
 
@@ -150,7 +150,7 @@ void YaivMainWindow::prepareActions()
     aFileClose = fileMenu->addAction(tr("&Quit"), this, &QWidget::close);
     aFileClose->setShortcut(QKeySequence::Quit);
 
-    QMenu *viewMenu = menuBar()->addMenu(tr("&View"));
+    viewMenu = menuBar()->addMenu(tr("&View"));
 
     aViewZoomIn = viewMenu->addAction(tr("Zoom &In"), this, &YaivMainWindow::sViewZoomIn);
     aViewZoomIn->setShortcut(QKeySequence::ZoomIn);
@@ -232,10 +232,13 @@ void YaivMainWindow::setScrollBar(QScrollBar *scrollBar, double factor)
 void YaivMainWindow::setView(bool value)
 {
     scrollArea->setVisible(value);
+    aFileOpenNext->setVisible(value);
+    aFileOpenPrev->setVisible(value);
     aFileRefreshFileList->setVisible(value);
     aViewZoomIn->setVisible(value);
     aViewZoomOut->setVisible(value);
     aViewNaturalSize->setVisible(value);
     aViewFitToWindow->setVisible(value);
     aViewStretchToWindow->setVisible(value);
+    viewMenu->menuAction()->setVisible(value);
 }

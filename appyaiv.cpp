@@ -14,14 +14,14 @@ void AppYaiv::setMainWindow(YaivMainWindow *yaivMainWindow)
 #if defined(Q_OS_OSX)
 bool AppYaiv::event(QEvent *event)
 {
-/*    switch (event->type())
+    switch (event->type())
     {
         case QEvent::FileOpen:
             yaivMainWindow->openFile(static_cast<QFileOpenEvent *>(event)->file());
             return true;
         default:
             break;
-    }*/
+    }
     return QApplication::event(event);
 }
 #endif
