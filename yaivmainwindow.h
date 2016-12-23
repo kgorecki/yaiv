@@ -38,7 +38,7 @@ private slots:
     void sViewNaturalSize();
     void sViewFitToWindow();
     void sViewStretchToWindow();
-//    void sHelpAbout();
+    void sHelpAbout();
 
 protected:
     void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
@@ -64,8 +64,9 @@ private:
     QString dirBase;
 
     //menu:
-    QMenu *fileMenu;
-    QMenu *viewMenu;
+    QMenu *menuFile;
+    QMenu *menuView;
+    QMenu *menuHelp;
 
     QAction *aFileOpen;
     QAction *aFileSave;
@@ -84,6 +85,7 @@ private:
     QAction *aViewNaturalSize;
     QAction *aViewFitToWindow;
     QAction *aViewStretchToWindow;
+    QAction *aHelpAbout;
 };
 
 #endif // YAIVMAINWINDOW_H

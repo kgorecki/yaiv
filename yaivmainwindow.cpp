@@ -121,6 +121,13 @@ void YaivMainWindow::sViewStretchToWindow()
         sViewNaturalSize();
 }
 
+void YaivMainWindow::sHelpAbout()
+{
+    QMessageBox::about(this, tr("About vaiv"),
+                    tr("The <b>Yet Another Image Viewer</b> version ")
+                    + tr("<br>Author: Krzysztof Gorecki kgorecki@b-intohimo.com"));
+}
+
 // *** protected
 void YaivMainWindow::resizeEvent(QResizeEvent *event)
 {
@@ -132,42 +139,48 @@ void YaivMainWindow::resizeEvent(QResizeEvent *event)
 // *** private
 void YaivMainWindow::prepareActions()
 {
-    fileMenu = menuBar()->addMenu(tr("File"));
-    aFileOpen = fileMenu->addAction(tr("&Open"), this, &YaivMainWindow::sFileOpen);
+    menuFile = menuBar()->addMenu(tr("File"));
+    aFileOpen = menuFile->addAction(tr("&Open"), this, &YaivMainWindow::sFileOpen);
     aFileOpen->setShortcut(QKeySequence::Open);
 
-    aFileOpenNext = fileMenu->addAction(tr("Open &Next"), this, &YaivMainWindow::sFileOpenNext);
+    aFileOpenNext = menuFile->addAction(tr("Open &Next"), this, &YaivMainWindow::sFileOpenNext);
     aFileOpenNext->setShortcut(QKeySequence::MoveToNextChar);
 
-    aFileOpenPrev = fileMenu->addAction(tr("Open &Previous"), this, &YaivMainWindow::sFileOpenPrev);
+    aFileOpenPrev = menuFile->addAction(tr("Open &Previous"), this, &YaivMainWindow::sFileOpenPrev);
     aFileOpenPrev->setShortcut(QKeySequence::MoveToPreviousChar);
 
-    fileMenu->addSeparator();
+    menuFile->addSeparator();
 
-    aFileRefreshFileList = fileMenu->addAction(tr("&Refresh file list"), this, &YaivMainWindow::sFileRefreshFileList);
+    aFileRefreshFileList = menuFile->addAction(tr("&Refresh file list"), this, &YaivMainWindow::sFileRefreshFileList);
     aFileRefreshFileList->setShortcut(tr("Ctrl+Shift+R"));
 
-    aFileClose = fileMenu->addAction(tr("&Quit"), this, &QWidget::close);
+    aFileClose = menuFile->addAction(tr("&Quit"), this, &QWidget::close);
     aFileClose->setShortcut(QKeySequence::Quit);
 
-    viewMenu = menuBar()->addMenu(tr("&View"));
+    menuView = menuBar()->addMenu(tr("&View"));
 
-    aViewZoomIn = viewMenu->addAction(tr("Zoom &In"), this, &YaivMainWindow::sViewZoomIn);
+    aViewZoomIn = menuView->addAction(tr("Zoom &In"), this, &YaivMainWindow::sViewZoomIn);
     aViewZoomIn->setShortcut(QKeySequence::ZoomIn);
 
-    aViewZoomOut = viewMenu->addAction(tr("Zoom &Out"), this, &YaivMainWindow::sViewZoomOut);
+    aViewZoomOut = menuView->addAction(tr("Zoom &Out"), this, &YaivMainWindow::sViewZoomOut);
     aViewZoomOut->setShortcut(QKeySequence::ZoomOut);
 
-    aViewNaturalSize = viewMenu->addAction(tr("&Natural Size"), this, &YaivMainWindow::sViewNaturalSize);
+    aViewNaturalSize = menuView->addAction(tr("&Natural Size"), this, &YaivMainWindow::sViewNaturalSize);
     aViewNaturalSize->setShortcut(tr("Ctrl+0"));
 
-    aViewFitToWindow = viewMenu->addAction(tr("&Fit to Window"), this, &YaivMainWindow::sViewFitToWindow);
+    aViewFitToWindow = menuView->addAction(tr("&Fit to Window"), this, &YaivMainWindow::sViewFitToWindow);
     aViewFitToWindow->setCheckable(true);
     aViewFitToWindow->setShortcut(tr("Ctrl+F"));
 
-    aViewStretchToWindow = viewMenu->addAction(tr("&Stretch to Window"), this, &YaivMainWindow::sViewStretchToWindow);
+    aViewStretchToWindow = menuView->addAction(tr("&Stretch to Window"), this, &YaivMainWindow::sViewStretchToWindow);
     aViewStretchToWindow->setCheckable(true);
     aViewStretchToWindow->setShortcut(tr("Ctrl+G"));
+
+    menuHelp = menuBar()->addMenu(tr("&Help"));
+
+    aHelpAbout = menuHelp->addAction(tr("&About"), this, &YaivMainWindow::sHelpAbout);
+    aHelpAbout->setShortcut(tr("ctrl+/"));
+//    aHelpAbout->setStatusTip(tr("Opens About menu"));
 }
 
 void YaivMainWindow::prepareMimeTypes()
@@ -240,5 +253,5 @@ void YaivMainWindow::setView(bool value)
     aViewNaturalSize->setVisible(value);
     aViewFitToWindow->setVisible(value);
     aViewStretchToWindow->setVisible(value);
-    viewMenu->menuAction()->setVisible(value);
+    menuView->menuAction()->setVisible(value);
 }
