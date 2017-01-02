@@ -2,6 +2,7 @@
 #define YAIVMAINWINDOW_H
 
 #include <QDirIterator>
+#include <QFileDialog>
 #include <QImage>
 #include <QMainWindow>
 
@@ -15,22 +16,24 @@ class YaivMainWindow : public QMainWindow
 {
     Q_OBJECT
 public:
-//    YaivMainWindow(int argc, char *argv[]);
     YaivMainWindow();
     bool openFile(const QString &fileName);
+    bool saveFile(const QString &fileName);
 
 signals:
 
 private slots:
     void sFileOpen();
-//    void sFileSave();
-//    void sFileSaveAs();
+    void sFileSave();
     void sFileOpenNext();
     void sFileOpenPrev();
+    void sFileSaveAs();
     void sFileRefreshFileList();
-//    void sEditRotateRight();
-//    void sEditRotateLeft();
-//    void sEditCopy();
+    void sEditCopy();
+    void sEditRotateRight();
+    void sEditRotateLeft();
+//    void sEditToGrayscale();
+//    void sEditToSepia();
 //    void sEditPaste();
 //    void sEditSettings();
     void sViewZoomIn();
@@ -45,26 +48,33 @@ protected:
 
 private:
     void prepareActions();
-    void prepareMimeTypes();
+    void prepareActionsFile();
+    void prepareActionsEdit();
+    void prepareActionsView();
+    void prepareFileDialog(QFileDialog &dialog, QFileDialog::AcceptMode acceptMode);
     void resetViewOptions();
     void resizeImage(double factor);
-    void setDirIterator(const QString &fileName, bool isDir = false);
+    void rotateImage(int angle);
+    void setDirIterator(bool isDir = false);
     void setImage(const QImage &newImage);
     void setResizedImage();
     void setScrollBar(QScrollBar *scrollBar, double factor);
+    void setTitleAndStatus(bool modified = false);
     void setView(bool value);
 
     QImage image;
+    QString fileName;
     QLabel *lblImage;
     QScrollArea *scrollArea;
     double scaleFactor;
-    QStringList *mimeTypeFilters;
     QStringList imagesInDirectory;
     QStringList::iterator dirIterator;
     QString dirBase;
+    bool modified;
 
     //menu:
     QMenu *menuFile;
+    QMenu *menuEdit;
     QMenu *menuView;
     QMenu *menuHelp;
 
@@ -77,6 +87,8 @@ private:
     QAction *aFileClose;
     QAction *aEditRotateRight;
     QAction *aEditRotateLeft;
+    QAction *aEditToGrayscale();
+    QAction *aEditToSepia();
     QAction *aEditCopy;
     QAction *aEditPaste;
     QAction *aEditSettings;

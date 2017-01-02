@@ -1,3 +1,11 @@
+VERSION_MAJOR = 0
+VERSION_MINOR = 1
+
+DEFINES += "VERSION_MAJOR=$$VERSION_MAJOR"\
+    "VERSION_MINOR=$$VERSION_MINOR"
+
+VERSION = $${VERSION_MAJOR}.$${VERSION_MINOR}
+
 QT += widgets
 
 CONFIG += c++11
@@ -6,7 +14,7 @@ TARGET = yaiv
 # CONFIG += console
 # CONFIG -= app_bundle
 
-# TEMPLATE = app
+TEMPLATE = app
 
 SOURCES += main.cpp \
     yaivmainwindow.cpp \

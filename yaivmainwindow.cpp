@@ -16,14 +16,16 @@ YaivMainWindow::YaivMainWindow()
     setCentralWidget(scrollArea);
 
     prepareActions();
-    prepareMimeTypes();
     setView(false);
+
+    setTitleAndStatus(false);
 
     resize(QGuiApplication::primaryScreen()->availableSize() * 3 / 5);
 }
 
 bool YaivMainWindow::openFile(const QString &fileName)
 {
+    this->fileName = fileName;
     QImageReader reader (fileName);
     reader.setAutoTransform(true);
     const QImage image = reader.read();
@@ -37,14 +39,27 @@ bool YaivMainWindow::openFile(const QString &fileName)
 
     setImage(image);
 
-    const QString message = tr("File: \"%1\", %2x%3, Color depth: %4, DPI: %5")
-        .arg(QDir::toNativeSeparators(fileName)).arg(image.width()).arg(image.height()).arg(image.depth()).arg(image.physicalDpiX());
-    statusBar()->showMessage(message);
-
-//    setDirIterator(fileName);
     aViewFitToWindow->setChecked(true);
     sViewFitToWindow();
+    setTitleAndStatus(false);
     setView(true);
+
+    return true;
+}
+
+bool YaivMainWindow::saveFile(const QString &fileName)
+{
+    QImageWriter imageWriter(fileName);
+    this->fileName = fileName;
+
+    if (!imageWriter.write(image))
+    {
+        QMessageBox::information(this, QGuiApplication::applicationDisplayName(),
+                                 tr("Cannot save %1!").arg(QDir::toNativeSeparators(fileName)));
+        return false;
+    }
+
+    setTitleAndStatus(false);
 
     return true;
 }
@@ -54,12 +69,10 @@ void YaivMainWindow::sFileOpen()
 {
     QFileDialog dialog(this, tr("Open file"));
 
-    dialog.setMimeTypeFilters(*mimeTypeFilters);
-    dialog.selectMimeTypeFilter("image/jpeg");
+    prepareFileDialog(dialog, QFileDialog::AcceptOpen);
 
-    while (dialog.exec() == QDialog::Accepted && !openFile(dialog.selectedFiles().first())) {}
-
-    setDirIterator(dialog.selectedFiles().first());
+    if (dialog.exec() == QDialog::Accepted && !openFile(dialog.selectedFiles().first()))
+        setDirIterator();
 }
 
 void YaivMainWindow::sFileOpenNext()
@@ -76,9 +89,42 @@ void YaivMainWindow::sFileOpenPrev()
     openFile(QDir::cleanPath(dirBase + QDir::separator() + *(--dirIterator)));
 }
 
+void YaivMainWindow::sFileSave()
+{
+    saveFile(fileName);
+}
+
+void YaivMainWindow::sFileSaveAs()
+{
+    QFileDialog dialog(this, tr("Save File As"));
+    prepareFileDialog(dialog, QFileDialog::AcceptSave);
+
+    if (dialog.exec() == QDialog::Accepted)
+        saveFile(dialog.selectedFiles().first());
+}
+
 void YaivMainWindow::sFileRefreshFileList()
 {
-    setDirIterator(dirBase, true);
+    setDirIterator(true);
+}
+
+void YaivMainWindow::sEditCopy()
+{
+#ifndef QT_NO_CLIPBOARD
+    QGuiApplication::clipboard()->setImage(image);
+#endif // QT_NO_CLIPBOARD
+}
+
+void YaivMainWindow::sEditRotateRight()
+{
+    rotateImage(90);
+    setTitleAndStatus(true);
+}
+
+void YaivMainWindow::sEditRotateLeft()
+{
+    rotateImage(270);
+    setTitleAndStatus(true);
 }
 
 void YaivMainWindow::sViewZoomIn()
@@ -97,7 +143,6 @@ void YaivMainWindow::sViewNaturalSize()
 {
     resetViewOptions();
     scaleFactor = 1;
-//    resizeImage(1);
     setImage(image);
 }
 
@@ -124,7 +169,7 @@ void YaivMainWindow::sViewStretchToWindow()
 void YaivMainWindow::sHelpAbout()
 {
     QMessageBox::about(this, tr("About vaiv"),
-                    tr("The <b>Yet Another Image Viewer</b> version ")
+                    tr("<b>Yet Another Image Viewer</b> version %1.%2").arg(VERSION_MAJOR).arg(VERSION_MINOR)
                     + tr("<br>Author: Krzysztof Gorecki kgorecki@b-intohimo.com"));
 }
 
@@ -139,6 +184,18 @@ void YaivMainWindow::resizeEvent(QResizeEvent *event)
 // *** private
 void YaivMainWindow::prepareActions()
 {
+    prepareActionsFile();
+    prepareActionsEdit();
+    prepareActionsView();
+
+    menuHelp = menuBar()->addMenu(tr("&Help"));
+
+    aHelpAbout = menuHelp->addAction(tr("&About"), this, &YaivMainWindow::sHelpAbout);
+    aHelpAbout->setShortcut(tr("ctrl+/"));
+}
+
+void YaivMainWindow::prepareActionsFile()
+{
     menuFile = menuBar()->addMenu(tr("File"));
     aFileOpen = menuFile->addAction(tr("&Open"), this, &YaivMainWindow::sFileOpen);
     aFileOpen->setShortcut(QKeySequence::Open);
@@ -149,14 +206,41 @@ void YaivMainWindow::prepareActions()
     aFileOpenPrev = menuFile->addAction(tr("Open &Previous"), this, &YaivMainWindow::sFileOpenPrev);
     aFileOpenPrev->setShortcut(QKeySequence::MoveToPreviousChar);
 
+    aFileSave = menuFile->addAction(tr("&Save"), this, &YaivMainWindow::sFileSave);
+    aFileSave->setShortcut(QKeySequence::Save);
+
+    aFileSaveAs = menuFile->addAction(tr("Save &As"), this, &YaivMainWindow::sFileSaveAs);
+    aFileSaveAs->setShortcut(QKeySequence::SaveAs);
+
     menuFile->addSeparator();
 
     aFileRefreshFileList = menuFile->addAction(tr("&Refresh file list"), this, &YaivMainWindow::sFileRefreshFileList);
     aFileRefreshFileList->setShortcut(tr("Ctrl+Shift+R"));
 
+    menuFile->addSeparator();
+
     aFileClose = menuFile->addAction(tr("&Quit"), this, &QWidget::close);
     aFileClose->setShortcut(QKeySequence::Quit);
+}
 
+void YaivMainWindow::prepareActionsEdit()
+{
+    menuEdit = menuBar()->addMenu(tr("&Edit"));
+
+    aEditCopy = menuEdit->addAction(tr("&Copy"), this, &YaivMainWindow::sEditCopy);
+    aEditCopy->setShortcut(QKeySequence::Copy);
+
+    menuEdit->addSeparator();
+
+    aEditRotateRight = menuEdit->addAction(tr("Rotate &Right"), this, &YaivMainWindow::sEditRotateRight);
+    aEditRotateRight->setShortcut(tr("Alt+R"));
+
+    aEditRotateLeft = menuEdit->addAction(tr("Rotate &Left"), this, &YaivMainWindow::sEditRotateLeft);
+    aEditRotateLeft->setShortcut(tr("Alt+L"));
+}
+
+void YaivMainWindow::prepareActionsView()
+{
     menuView = menuBar()->addMenu(tr("&View"));
 
     aViewZoomIn = menuView->addAction(tr("Zoom &In"), this, &YaivMainWindow::sViewZoomIn);
@@ -175,21 +259,32 @@ void YaivMainWindow::prepareActions()
     aViewStretchToWindow = menuView->addAction(tr("&Stretch to Window"), this, &YaivMainWindow::sViewStretchToWindow);
     aViewStretchToWindow->setCheckable(true);
     aViewStretchToWindow->setShortcut(tr("Ctrl+G"));
-
-    menuHelp = menuBar()->addMenu(tr("&Help"));
-
-    aHelpAbout = menuHelp->addAction(tr("&About"), this, &YaivMainWindow::sHelpAbout);
-    aHelpAbout->setShortcut(tr("ctrl+/"));
-//    aHelpAbout->setStatusTip(tr("Opens About menu"));
 }
 
-void YaivMainWindow::prepareMimeTypes()
+void YaivMainWindow::prepareFileDialog(QFileDialog &dialog, QFileDialog::AcceptMode acceptMode)
 {
-    mimeTypeFilters = new QStringList;
-    const QByteArrayList supportedMimeTypes = QImageReader::supportedMimeTypes();
+    QStringList *mimeTypeFilters = new QStringList;
+    const QByteArrayList supportedMimeTypes = acceptMode == QFileDialog::AcceptOpen
+        ? QImageReader::supportedMimeTypes() : QImageWriter::supportedMimeTypes();
     foreach (const QByteArray &mimeTypeName, supportedMimeTypes)
         mimeTypeFilters->append(mimeTypeName);
     mimeTypeFilters->sort();
+
+    dialog.setMimeTypeFilters(*mimeTypeFilters);
+    dialog.selectMimeTypeFilter("image/jpeg");
+    dialog.setAcceptMode(acceptMode);
+    if (acceptMode == QFileDialog::AcceptSave)
+    {
+        QFileInfo file(fileName);
+        dialog.setDefaultSuffix(file.suffix());
+    }
+}
+
+void YaivMainWindow::resetViewOptions()
+{
+    aViewFitToWindow->setChecked(false);
+    aViewStretchToWindow->setChecked(false);
+    scrollArea->setWidgetResizable(false);
 }
 
 void YaivMainWindow::resizeImage(double factor)
@@ -200,14 +295,18 @@ void YaivMainWindow::resizeImage(double factor)
     setScrollBar(scrollArea->verticalScrollBar(), factor);
 }
 
-void YaivMainWindow::resetViewOptions()
+void YaivMainWindow::rotateImage(int angle)
 {
-    aViewFitToWindow->setChecked(false);
-    aViewStretchToWindow->setChecked(false);
-    scrollArea->setWidgetResizable(false);
+    QPixmap pixmap = QPixmap::fromImage(image);
+    QMatrix matrix;
+    matrix.rotate(angle);
+    image = pixmap.transformed(matrix).toImage();
+    setImage(image);
+    aViewFitToWindow->setChecked(true);
+    sViewFitToWindow();
 }
 
-void YaivMainWindow::setDirIterator(const QString &fileName, bool isDir)
+void YaivMainWindow::setDirIterator(bool isDir)
 {
     if (!isDir)
         dirBase = QFileInfo(fileName).absoluteDir().path();
@@ -242,16 +341,41 @@ void YaivMainWindow::setScrollBar(QScrollBar *scrollBar, double factor)
     scrollBar->setValue(int(factor * scrollBar->value()));
 }
 
+void YaivMainWindow::setTitleAndStatus(bool modified)
+{
+    if (fileName.isEmpty())
+    {
+        setWindowTitle(tr("Yet Another Image Viewer"));
+        statusBar()->showMessage(tr(""));
+        return;
+    }
+
+    this->modified = modified;
+
+    QString mod = (modified) ? tr("* ") : tr("");
+    setWindowTitle(mod + fileName);
+
+    const QString message = tr("File: %1x%2, Color depth: %3, DPI: %4")
+        .arg(image.width()).arg(image.height()).arg(image.depth()).arg(image.physicalDpiX());
+    statusBar()->showMessage(message);
+}
+
 void YaivMainWindow::setView(bool value)
 {
     scrollArea->setVisible(value);
     aFileOpenNext->setVisible(value);
     aFileOpenPrev->setVisible(value);
+    aFileSave->setVisible(value);
+    aFileSaveAs->setVisible(value);
     aFileRefreshFileList->setVisible(value);
+    aEditCopy->setVisible(value);
+    aEditRotateRight->setVisible(value);
+    aEditRotateLeft->setVisible(value);
     aViewZoomIn->setVisible(value);
     aViewZoomOut->setVisible(value);
     aViewNaturalSize->setVisible(value);
     aViewFitToWindow->setVisible(value);
     aViewStretchToWindow->setVisible(value);
+    menuEdit->menuAction()->setVisible(value);
     menuView->menuAction()->setVisible(value);
 }
