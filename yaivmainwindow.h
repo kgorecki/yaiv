@@ -6,6 +6,8 @@
 #include <QImage>
 #include <QMainWindow>
 
+#include "imageprocessor.h"
+
 class QAction;
 class QLabel;
 class QMenu;
@@ -32,8 +34,10 @@ private slots:
     void sEditCopy();
     void sEditRotateRight();
     void sEditRotateLeft();
-//    void sEditToGrayscale();
-//    void sEditToSepia();
+    void sEditFlipHorizontally();
+    void sEditFlipVertically();
+    void sEditToGrayscale();
+    void sEditToSepia();
 //    void sEditPaste();
 //    void sEditSettings();
     void sViewZoomIn();
@@ -62,7 +66,7 @@ private:
     void setTitleAndStatus(bool modified = false);
     void setView(bool value);
 
-    QImage image;
+    ImageProcessor imageProcessor;
     QString fileName;
     QLabel *lblImage;
     QScrollArea *scrollArea;
@@ -87,8 +91,10 @@ private:
     QAction *aFileClose;
     QAction *aEditRotateRight;
     QAction *aEditRotateLeft;
-    QAction *aEditToGrayscale();
-    QAction *aEditToSepia();
+    QAction *aEditFlipHorizontally;
+    QAction *aEditFlipVertically;
+    QAction *aEditToGrayscale;
+    QAction *aEditToSepia;
     QAction *aEditCopy;
     QAction *aEditPaste;
     QAction *aEditSettings;

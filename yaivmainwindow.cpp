@@ -3,7 +3,8 @@
 #include "yaivmainwindow.h"
 
 YaivMainWindow::YaivMainWindow()
-    : lblImage(new QLabel)
+    : imageProcessor(this)
+    , lblImage(new QLabel)
     , scrollArea(new QScrollArea)
     , scaleFactor(1)
 {
@@ -52,7 +53,7 @@ bool YaivMainWindow::saveFile(const QString &fileName)
     QImageWriter imageWriter(fileName);
     this->fileName = fileName;
 
-    if (!imageWriter.write(image))
+    if (!imageWriter.write(* imageProcessor.getImage()))
     {
         QMessageBox::information(this, QGuiApplication::applicationDisplayName(),
                                  tr("Cannot save %1!").arg(QDir::toNativeSeparators(fileName)));
@@ -111,7 +112,7 @@ void YaivMainWindow::sFileRefreshFileList()
 void YaivMainWindow::sEditCopy()
 {
 #ifndef QT_NO_CLIPBOARD
-    QGuiApplication::clipboard()->setImage(image);
+    QGuiApplication::clipboard()->setImage(* imageProcessor.getImage());
 #endif // QT_NO_CLIPBOARD
 }
 
@@ -124,6 +125,30 @@ void YaivMainWindow::sEditRotateRight()
 void YaivMainWindow::sEditRotateLeft()
 {
     rotateImage(270);
+    setTitleAndStatus(true);
+}
+
+void YaivMainWindow::sEditToGrayscale()
+{
+    setImage(* imageProcessor.toGrayscale());
+    setTitleAndStatus(true);
+}
+
+void YaivMainWindow::sEditToSepia()
+{
+    setImage(* imageProcessor.toSepia());
+    setTitleAndStatus(true);
+}
+
+void YaivMainWindow::sEditFlipHorizontally()
+{
+    setImage(* imageProcessor.flip(kFlipHorizontal));
+    setTitleAndStatus(true);
+}
+
+void YaivMainWindow::sEditFlipVertically()
+{
+    setImage(* imageProcessor.flip(kFlipVertical));
     setTitleAndStatus(true);
 }
 
@@ -143,7 +168,7 @@ void YaivMainWindow::sViewNaturalSize()
 {
     resetViewOptions();
     scaleFactor = 1;
-    setImage(image);
+    setImage(* imageProcessor.getImage());
 }
 
 void YaivMainWindow::sViewFitToWindow()
@@ -237,6 +262,18 @@ void YaivMainWindow::prepareActionsEdit()
 
     aEditRotateLeft = menuEdit->addAction(tr("Rotate &Left"), this, &YaivMainWindow::sEditRotateLeft);
     aEditRotateLeft->setShortcut(tr("Alt+L"));
+
+    aEditFlipHorizontally = menuEdit->addAction(tr("Flip &Horizontally"), this, &YaivMainWindow::sEditFlipHorizontally);
+    aEditFlipHorizontally->setShortcut(tr("Alt+H"));
+
+    aEditFlipVertically = menuEdit->addAction(tr("Flip &Vertically"), this, &YaivMainWindow::sEditFlipVertically);
+    aEditFlipVertically->setShortcut(tr("Alt+V"));
+
+    aEditToGrayscale = menuEdit->addAction(tr("To &Grayscale"), this, &YaivMainWindow::sEditToGrayscale);
+    aEditToGrayscale->setShortcut(tr("Alt+G"));
+
+    aEditToSepia = menuEdit->addAction(tr("To &Sepia"), this, &YaivMainWindow::sEditToSepia);
+    aEditToSepia->setShortcut(tr("Alt+S"));
 }
 
 void YaivMainWindow::prepareActionsView()
@@ -297,11 +334,7 @@ void YaivMainWindow::resizeImage(double factor)
 
 void YaivMainWindow::rotateImage(int angle)
 {
-    QPixmap pixmap = QPixmap::fromImage(image);
-    QMatrix matrix;
-    matrix.rotate(angle);
-    image = pixmap.transformed(matrix).toImage();
-    setImage(image);
+    setImage(* imageProcessor.rotate(angle));
     aViewFitToWindow->setChecked(true);
     sViewFitToWindow();
 }
@@ -323,15 +356,15 @@ void YaivMainWindow::setDirIterator(bool isDir)
 
 void YaivMainWindow::setImage(const QImage &newImage)
 {
-    image = newImage;
-    lblImage->setPixmap(QPixmap::fromImage(image));
+    imageProcessor.setImage(newImage);
+    lblImage->setPixmap(QPixmap::fromImage(* imageProcessor.getImage()));
     scaleFactor = 1;
     resizeImage(1);
 }
 
 void YaivMainWindow::setResizedImage()
 {
-    lblImage->setPixmap(QPixmap::fromImage(image).scaled(scrollArea->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    lblImage->setPixmap(QPixmap::fromImage(* imageProcessor.getImage()).scaled(scrollArea->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
     scaleFactor = 1;
     resizeImage(1);
 }
@@ -356,7 +389,7 @@ void YaivMainWindow::setTitleAndStatus(bool modified)
     setWindowTitle(mod + fileName);
 
     const QString message = tr("File: %1x%2, Color depth: %3, DPI: %4")
-        .arg(image.width()).arg(image.height()).arg(image.depth()).arg(image.physicalDpiX());
+        .arg(imageProcessor.getWidth()).arg(imageProcessor.getHeight()).arg(imageProcessor.getDepth()).arg(imageProcessor.getDpi());
     statusBar()->showMessage(message);
 }
 
@@ -371,6 +404,10 @@ void YaivMainWindow::setView(bool value)
     aEditCopy->setVisible(value);
     aEditRotateRight->setVisible(value);
     aEditRotateLeft->setVisible(value);
+    aEditFlipHorizontally->setVisible(value);
+    aEditFlipVertically->setVisible(value);
+    aEditToGrayscale->setVisible(value);
+    aEditToSepia->setVisible(value);
     aViewZoomIn->setVisible(value);
     aViewZoomOut->setVisible(value);
     aViewNaturalSize->setVisible(value);
