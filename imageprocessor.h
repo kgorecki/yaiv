@@ -16,21 +16,26 @@ class ImageProcessor : public QObject
     Q_OBJECT
 public:
     ImageProcessor(QObject *parent = 0);
+    void addImage(QImage newImage);
     QImage* flip(eFlip direction);
+    QImage* redo();
     QImage* rotate(int angle);
+    void setImage(const QImage &image);
     QImage* toGrayscale();
     QImage* toSepia();
+    QImage* undo();
 
 //inlines
-    inline int getDepth() { return image.depth(); };
-    inline int getDpi() { return image.physicalDpiX(); };
-    inline QImage* getImage() { return &image; };
-    inline int getHeight() { return image.height(); };
-    inline int getWidth() { return image.width(); };
-    inline void setImage(const QImage &image) { this->image = image; };
+    inline int getDepth() { return image->depth(); };
+    inline int getDpi() { return image->physicalDpiX(); };
+    inline QImage* getImage() { return image; };
+    inline int getHeight() { return image->height(); };
+    inline int getWidth() { return image->width(); };
 
 private:
-    QImage image;
+    int currentImage;
+    QVector<QImage> images;
+    QVector<QImage>::iterator image;
 };
 
 #endif // IMAGEPROCESSOR_H

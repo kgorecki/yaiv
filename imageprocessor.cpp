@@ -1,28 +1,52 @@
 #include "imageprocessor.h"
 
-ImageProcessor::ImageProcessor(QObject *parent) : QObject(parent)
+ImageProcessor::ImageProcessor(QObject *parent)
+    : QObject(parent)
+    , currentImage(0)
 {
+}
 
+void ImageProcessor::addImage(QImage newImage)
+{
+    if (currentImage < images.length())
+        images.erase(image + 1, images.end());
+
+    images.append(newImage);
+    if (!currentImage)
+        image = images.begin();
+    else
+        image = images.end() - 1;
+    ++currentImage;
 }
 
 QImage* ImageProcessor::flip(eFlip direction)
 {
-    image = (kFlipHorizontal == direction) ? image.mirrored(true, false) : image.mirrored(false, true);
-    return &image;
+    addImage((kFlipHorizontal == direction) ? image->mirrored(true, false) : image->mirrored(false, true));
+    return image;
 }
 
 QImage* ImageProcessor::rotate(int angle)
 {
-    QPixmap pixmap = QPixmap::fromImage(image);
+    QPixmap pixmap = QPixmap::fromImage(*image);
     QMatrix matrix;
     matrix.rotate(angle);
-    image = pixmap.transformed(matrix).toImage();
-    return &image;
+    addImage(pixmap.transformed(matrix).toImage());
+    return image;
+}
+
+void ImageProcessor::setImage(const QImage &image)
+{
+//    if (currentImage)
+//    {
+//        currentImage = 0;
+//        images.erase(images.begin(), images.end());
+//    }
+    addImage(image);
 }
 
 QImage* ImageProcessor::toGrayscale()
 {
-    QImage tempImage = image.convertToFormat(QImage::Format_RGB32);
+    QImage tempImage = image->convertToFormat(QImage::Format_RGB32);
     for (int i = 0; i < tempImage.height(); i++)
     {
         QRgb *pixel = reinterpret_cast<QRgb *>(tempImage.scanLine(i));
@@ -33,13 +57,13 @@ QImage* ImageProcessor::toGrayscale()
             *pixel = QColor(color, color, color).rgb();
         }
     }
-    image = tempImage;
-    return &image;
+    addImage(tempImage);
+    return image;
 }
 
 QImage* ImageProcessor::toSepia()
 {
-    QImage tempImage = image.convertToFormat(QImage::Format_RGB32);
+    QImage tempImage = image->convertToFormat(QImage::Format_RGB32);
     for (int i = 0; i < tempImage.height(); i++)
     {
         QRgb *pixel = reinterpret_cast<QRgb *>(tempImage.scanLine(i));
@@ -54,6 +78,6 @@ QImage* ImageProcessor::toSepia()
                             blue < 255 ? blue : 255).rgb();
         }
     }
-    image = tempImage;
-    return &image;
+    addImage(tempImage);
+    return image;
 }
