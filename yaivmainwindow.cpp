@@ -7,6 +7,7 @@ YaivMainWindow::YaivMainWindow()
     , lblImage(new QLabel)
     , scrollArea(new QScrollArea)
     , scaleFactor(1)
+    , modified(false)
 {
     lblImage->setBackgroundRole(QPalette::Base);
     lblImage->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
@@ -65,9 +66,19 @@ bool YaivMainWindow::saveFile(const QString &fileName)
     return true;
 }
 
+void YaivMainWindow::closeEvent(QCloseEvent *event)
+{
+    event->ignore();
+    if (!modified || (modified && showDiscardDialog()))
+        event->accept();
+}
+
 // *** private slots
 void YaivMainWindow::sFileOpen()
 {
+    if (modified && !showDiscardDialog())
+        return;
+
     QFileDialog dialog(this, tr("Open file"));
 
     prepareFileDialog(dialog, QFileDialog::AcceptOpen);
@@ -78,6 +89,8 @@ void YaivMainWindow::sFileOpen()
 
 void YaivMainWindow::sFileOpenNext()
 {
+    if (modified && !showDiscardDialog())
+        return;
     if (++dirIterator == imagesInDirectory.end())
         dirIterator = imagesInDirectory.begin();
     openFile(QDir::cleanPath(dirBase + QDir::separator() + *(dirIterator)));
@@ -85,6 +98,8 @@ void YaivMainWindow::sFileOpenNext()
 
 void YaivMainWindow::sFileOpenPrev()
 {
+    if (modified && !showDiscardDialog())
+        return;
     if (dirIterator == imagesInDirectory.begin())
         dirIterator = imagesInDirectory.end();
     openFile(QDir::cleanPath(dirBase + QDir::separator() + *(--dirIterator)));
@@ -452,4 +467,11 @@ void YaivMainWindow::setView(bool value)
     aViewStretchToWindow->setVisible(value);
     menuEdit->menuAction()->setVisible(value);
     menuView->menuAction()->setVisible(value);
+}
+
+bool YaivMainWindow::showDiscardDialog()
+{
+    return QMessageBox::Yes == QMessageBox::question(this, "Unsaved image!",
+                    "You didn't save image! Are you sure you want to discard changes?",
+                    QMessageBox::Yes|QMessageBox::No);
 }

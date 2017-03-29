@@ -27,6 +27,7 @@ public:
     YaivMainWindow();
     bool openFile(const QString &fileName);
     bool saveFile(const QString &fileName);
+    void closeEvent (QCloseEvent *event) override;
 
 signals:
 
@@ -74,6 +75,7 @@ private:
     void setTitleAndStatus(bool modified = false);
     void setUndoRedo();
     void setView(bool value);
+    bool showDiscardDialog();
 
     ImageProcessor imageProcessor;
     QString fileName;
