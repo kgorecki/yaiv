@@ -114,12 +114,14 @@ void YaivMainWindow::sEditUndo()
     setImage(* imageProcessor.undo());
     if (!imageProcessor.canUndo())
         setTitleAndStatus(false);
+    setUndoRedo();
 }
 
 void YaivMainWindow::sEditRedo()
 {
     setImage(* imageProcessor.redo());
     setTitleAndStatus(true);
+    setUndoRedo();
 }
 
 void YaivMainWindow::sEditCopy()
@@ -413,6 +415,19 @@ void YaivMainWindow::setTitleAndStatus(bool modified)
     const QString message = tr("File: %1x%2, Color depth: %3, DPI: %4")
         .arg(imageProcessor.getWidth()).arg(imageProcessor.getHeight()).arg(imageProcessor.getDepth()).arg(imageProcessor.getDpi());
     statusBar()->showMessage(message);
+    setUndoRedo();
+}
+
+void YaivMainWindow::setUndoRedo()
+{
+    if (imageProcessor.canUndo())
+        aEditUndo->setVisible(true);
+    else
+        aEditUndo->setVisible(false);
+    if (imageProcessor.canRedo())
+        aEditRedo->setVisible(true);
+    else
+        aEditRedo->setVisible(false);
 }
 
 void YaivMainWindow::setView(bool value)

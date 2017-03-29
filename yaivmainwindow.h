@@ -72,6 +72,7 @@ private:
     void setResizedImage();
     void setScrollBar(QScrollBar *scrollBar, double factor);
     void setTitleAndStatus(bool modified = false);
+    void setUndoRedo();
     void setView(bool value);
 
     ImageProcessor imageProcessor;
