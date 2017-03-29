@@ -38,7 +38,7 @@ bool YaivMainWindow::openFile(const QString &fileName)
         return false;
     }
 
-    setImage(image);
+    setImage(image, kExistingImageNew);
 
     aViewFitToWindow->setChecked(true);
     sViewFitToWindow();
@@ -72,7 +72,7 @@ void YaivMainWindow::sFileOpen()
 
     prepareFileDialog(dialog, QFileDialog::AcceptOpen);
 
-    if (dialog.exec() == QDialog::Accepted && !openFile(dialog.selectedFiles().first()))
+    if (dialog.exec() == QDialog::Accepted && openFile(dialog.selectedFiles().first()))
         setDirIterator();
 }
 
@@ -107,6 +107,19 @@ void YaivMainWindow::sFileSaveAs()
 void YaivMainWindow::sFileRefreshFileList()
 {
     setDirIterator(true);
+}
+
+void YaivMainWindow::sEditUndo()
+{
+    setImage(* imageProcessor.undo());
+    if (!imageProcessor.canUndo())
+        setTitleAndStatus(false);
+}
+
+void YaivMainWindow::sEditRedo()
+{
+    setImage(* imageProcessor.redo());
+    setTitleAndStatus(true);
 }
 
 void YaivMainWindow::sEditCopy()
@@ -252,6 +265,14 @@ void YaivMainWindow::prepareActionsEdit()
 {
     menuEdit = menuBar()->addMenu(tr("&Edit"));
 
+    aEditUndo = menuEdit->addAction(tr("&Undo"), this, &YaivMainWindow::sEditUndo);
+    aEditUndo->setShortcut(QKeySequence::Undo);
+
+    aEditRedo = menuEdit->addAction(tr("R&edo"), this, &YaivMainWindow::sEditRedo);
+    aEditRedo->setShortcut(QKeySequence::Redo);
+
+    menuEdit->addSeparator();
+
     aEditCopy = menuEdit->addAction(tr("&Copy"), this, &YaivMainWindow::sEditCopy);
     aEditCopy->setShortcut(QKeySequence::Copy);
 
@@ -354,9 +375,10 @@ void YaivMainWindow::setDirIterator(bool isDir)
     }
 }
 
-void YaivMainWindow::setImage(const QImage &newImage)
+void YaivMainWindow::setImage(const QImage &newImage, eExistingImage existing)
 {
-    imageProcessor.setImage(newImage);
+    if (kExistingImageNew == existing)
+        imageProcessor.setImage(newImage);
     lblImage->setPixmap(QPixmap::fromImage(* imageProcessor.getImage()));
     scaleFactor = 1;
     resizeImage(1);

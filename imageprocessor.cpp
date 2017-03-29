@@ -19,9 +19,29 @@ void ImageProcessor::addImage(QImage newImage)
     ++currentImage;
 }
 
+bool ImageProcessor::canRedo()
+{
+    return (currentImage < images.length() ? true : false);
+}
+
+bool ImageProcessor::canUndo()
+{
+    return (currentImage > 1 ? true : false);
+}
+
 QImage* ImageProcessor::flip(eFlip direction)
 {
     addImage((kFlipHorizontal == direction) ? image->mirrored(true, false) : image->mirrored(false, true));
+    return image;
+}
+
+QImage* ImageProcessor::redo()
+{
+    if (canRedo())
+    {
+        ++image;
+        ++currentImage;
+    }
     return image;
 }
 
@@ -79,5 +99,15 @@ QImage* ImageProcessor::toSepia()
         }
     }
     addImage(tempImage);
+    return image;
+}
+
+QImage* ImageProcessor::undo()
+{
+    if (canUndo())
+    {
+        --image;
+        --currentImage;
+    }
     return image;
 }

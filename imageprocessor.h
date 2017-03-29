@@ -17,6 +17,8 @@ class ImageProcessor : public QObject
 public:
     ImageProcessor(QObject *parent = 0);
     void addImage(QImage newImage);
+    bool canRedo();
+    bool canUndo();
     QImage* flip(eFlip direction);
     QImage* redo();
     QImage* rotate(int angle);

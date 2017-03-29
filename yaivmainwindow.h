@@ -8,6 +8,12 @@
 
 #include "imageprocessor.h"
 
+enum eExistingImage
+{
+    kExistingImageNew = 0,
+    kExistingImageExisting
+};
+
 class QAction;
 class QLabel;
 class QMenu;
@@ -31,6 +37,8 @@ private slots:
     void sFileOpenPrev();
     void sFileSaveAs();
     void sFileRefreshFileList();
+    void sEditUndo();
+    void sEditRedo();
     void sEditCopy();
     void sEditRotateRight();
     void sEditRotateLeft();
@@ -60,7 +68,7 @@ private:
     void resizeImage(double factor);
     void rotateImage(int angle);
     void setDirIterator(bool isDir = false);
-    void setImage(const QImage &newImage);
+    void setImage(const QImage &newImage, eExistingImage existing = kExistingImageExisting);
     void setResizedImage();
     void setScrollBar(QScrollBar *scrollBar, double factor);
     void setTitleAndStatus(bool modified = false);
@@ -89,6 +97,8 @@ private:
     QAction *aFileOpenPrev;
     QAction *aFileRefreshFileList;
     QAction *aFileClose;
+    QAction *aEditUndo;
+    QAction *aEditRedo;
     QAction *aEditRotateRight;
     QAction *aEditRotateLeft;
     QAction *aEditFlipHorizontally;
