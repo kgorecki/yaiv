@@ -45,6 +45,12 @@ QImage* ImageProcessor::redo()
     return image;
 }
 
+void ImageProcessor::reset()
+{
+    currentImage = 0;
+    images.clear();
+}
+
 QImage* ImageProcessor::rotate(int angle)
 {
     QPixmap pixmap = QPixmap::fromImage(*image);
