@@ -18,12 +18,10 @@ TEMPLATE = app
 
 SOURCES += main.cpp \
     yaivmainwindow.cpp \
-    appyaiv.cpp \
     imageprocessor.cpp
 
 HEADERS += \
     yaivmainwindow.h \
-    appyaiv.h \
     imageprocessor.h
 
 mac {
