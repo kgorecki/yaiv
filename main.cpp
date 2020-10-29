@@ -5,7 +5,7 @@
 
 int main(int argc, char *argv[])
 {
-    AppYaiv a(argc, argv);
+    QApplication a(argc, argv);
     QGuiApplication::setApplicationDisplayName(YaivMainWindow::tr("Yet Another Image Viewer"));
     YaivMainWindow yaivMainWindow;
     yaivMainWindow.show();
