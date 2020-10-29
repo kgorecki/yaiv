@@ -27,6 +27,7 @@ YaivMainWindow::YaivMainWindow()
 
 bool YaivMainWindow::openFile(const QString &fileName)
 {
+    imageProcessor.reset();
     this->fileName = fileName;
     QImageReader reader (fileName);
     reader.setAutoTransform(true);

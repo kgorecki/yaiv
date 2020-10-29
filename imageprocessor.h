@@ -21,6 +21,7 @@ public:
     bool canUndo();
     QImage* flip(eFlip direction);
     QImage* redo();
+    void reset();
     QImage* rotate(int angle);
     void setImage(const QImage &image);
     QImage* toGrayscale();
